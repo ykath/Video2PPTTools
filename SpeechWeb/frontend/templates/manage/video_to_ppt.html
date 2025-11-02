@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}视频转PPT任务队列 · VideoPPT{% endblock %}
+{% block content %}
+<nav class="breadcrumbs">
+    <a href="{{ url_for('ppt_video_home') }}">返回主页</a>
+    <span>/</span>
+    <span>视频转PPT管理</span>
+</nav>
+
+<div class="page-header">
+    <h1 class="page-title">视频转PPT任务</h1>
+    <a class="btn secondary" href="{{ url_for('ppt_video_home') }}" target="_blank" rel="noopener">打开浏览页面</a>
+</div>
+<p class="page-intro">提交哔哩哔哩培训视频链接，自动下载截取PPT截图并生成PPT文件。支持调节截图频率、PPT显示模式等参数，所有任务会在后台排队执行。</p>
+
+<div class="grid two-columns">
+    <section class="card">
+        <h2>添加新任务</h2>
+        <form id="ppt-job-form" class="stacked">
+            <div class="form-row">
+                <label for="field-url">视频链接 <span class="required">*</span></label>
+                <input id="field-url" name="url" type="url" placeholder="https://www.bilibili.com/video/BV..." required>
+                <small>支持B站 BV、番剧和课程地址。</small>
+            </div>
+            <div class="form-row">
+                <label for="field-title">PPT标题</label>
+                <input id="field-title" name="title" type="text" placeholder="PPT 标题（可选，默认取视频标题）">
+            </div>
+            <div class="form-row">
+                <label for="field-subtitle">副标题</label>
+                <input id="field-subtitle" name="subtitle" type="text" placeholder="副标题（可选）">
+            </div>
+            <div class="form-row grouped">
+                <div>
+                    <label for="field-similarity">相似度阈值</label>
+                    <input id="field-similarity" name="similarity_threshold" type="number" step="0.01" min="0" max="1" value="0.95">
+                    <small>越高越少截图，推荐 0.93 - 0.98。</small>
+                </div>
+                <div>
+                    <label for="field-interval">最小间隔(秒)</label>
+                    <input id="field-interval" name="min_interval_seconds" type="number" step="0.1" min="0" value="2">
+                </div>
+                <div>
+                    <label for="field-skip">跳过开头(秒)</label>
+                    <input id="field-skip" name="skip_first_seconds" type="number" step="1" min="0" value="0">
+                </div>
+            </div>
+            <div class="form-row grouped">
+                <div>
+                    <label for="field-fill">图片铺满模式</label>
+                    <select id="field-fill" name="fill_mode">
+                        <option value="true" selected>铺满幻灯片（可能裁切边缘）</option>
+                        <option value="false">保持完整显示（保留边距）</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="field-format">图片格式</label>
+                    <select id="field-format" name="image_format">
+                        <option value="jpg" selected>JPG</option>
+                        <option value="png">PNG</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="field-quality">图片质量</label>
+                    <input id="field-quality" name="image_quality" type="number" min="10" max="100" value="95">
+                </div>
+            </div>
+            <div class="form-row">
+                <label for="field-job-id">自定义任务ID</label>
+                <input id="field-job-id" name="job_id" type="text" maxlength="64" placeholder="留空自动生成">
+            </div>
+            <div class="form-row">
+                <label for="field-file-pattern">自定义下载文件名 (BBDown --file-pattern)</label>
+                <input id="field-file-pattern" name="file_pattern" type="text" placeholder="如：&lt;videoTitle&gt;">
+            </div>
+            <div class="form-row">
+                <label for="field-extra-args">额外的 BBDown 参数</label>
+                <textarea id="field-extra-args" name="extra_download_args" rows="2" placeholder="每行一个参数，例如 --dfn-priority 1080P"></textarea>
+            </div>
+            <div class="form-footer">
+                <button type="submit" id="ppt-job-submit" class="btn">提交任务</button>
+                <button type="reset" class="btn secondary">重置</button>
+                <span id="form-status" class="form-status" aria-live="polite"></span>
+            </div>
+        </form>
+    </section>
+
+    <section class="card" id="job-detail-card" aria-live="polite">
+        <h2>任务详情</h2>
+        <p id="detail-placeholder">选择任务查看状态与结果。</p>
+        <div id="job-detail" class="hidden"></div>
+    </section>
+</div>
+
+<section class="card">
+    <header class="card-header">
+        <h2>任务队列</h2>
+        <div class="actions">
+            <button type="button" class="btn primary" id="process-queue">批量处理队列</button>
+            <button type="button" class="btn secondary" id="refresh-jobs">刷新</button>
+            <label class="toggle-inline">
+                <input type="checkbox" id="auto-refresh" checked>
+                <span>每 20 秒自动刷新</span>
+            </label>
+        </div>
+    </header>
+    <div id="jobs-table-container">
+        <p>正在加载任务列表...</p>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.VideoToPPTConfig = {
+        endpoints: {
+            list: "{{ url_for('list_video_ppt_jobs') }}",
+            create: "{{ url_for('create_video_ppt_job') }}",
+            detail: "{{ url_for('get_video_ppt_job', job_id='JOB_ID_PLACEHOLDER') }}".replace('JOB_ID_PLACEHOLDER', '{job_id}'),
+            processQueue: "{{ url_for('process_all_pending_jobs') }}",
+            reprocess: "{{ url_for('reprocess_job', job_id='JOB_ID_PLACEHOLDER') }}".replace('JOB_ID_PLACEHOLDER', '{job_id}'),
+            download: "{{ url_for('download_ppt', job_id='JOB_ID_PLACEHOLDER') }}".replace('JOB_ID_PLACEHOLDER', '{job_id}')
+        },
+        frontend: {
+            play: "{{ url_for('ppt_video_player', job_id='JOB_ID_PLACEHOLDER') }}".replace('JOB_ID_PLACEHOLDER', '{job_id}')
+        }
+    };
+</script>
+{% endblock %}
+
+{% block page_scripts %}
+<script src="{{ url_for('static', path='js/video_to_ppt.js') }}"></script>
+{% endblock %}

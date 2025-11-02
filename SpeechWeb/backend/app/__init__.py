@@ -1,0 +1,2 @@
+"""SpeechWeb FastAPI application package."""
+

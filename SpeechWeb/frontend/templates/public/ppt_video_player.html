@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}{{ job.title or job.job_id }} · PPT视频播放{% endblock %}
+{% block body_class %}public-body ppt-player-body{% endblock %}
+{% block header %}
+<header class="public-header">
+    <div class="public-header__inner">
+        <div class="public-header__brand">
+            <span class="brand-mark">SpeechWeb</span>
+            <div>
+                <h1>{{ job.title or job.job_id }}</h1>
+                <p>PPT视频播放页</p>
+            </div>
+        </div>
+        <div class="public-header__actions">
+            <a class="ghost-link" href="{{ url_for('ppt_video_home') }}">返回列表</a>
+            {% if job.url %}
+            <a class="ghost-link" href="{{ job.url }}" target="_blank" rel="noopener noreferrer">原始网站</a>
+            {% endif %}
+        </div>
+    </div>
+</header>
+{% endblock %}
+{% block main_class %}public-main ppt-player-main{% endblock %}
+{% block content %}
+
+<div class="ppt-player-container">
+    <!-- 视频播放区域 -->
+    <section class="ppt-player__video-section">
+        {% if video_sources and video_sources|length > 1 %}
+        <div class="video-switcher" role="group" aria-label="视频分段切换">
+            <span class="video-switcher__label">视频段：</span>
+            <div class="video-switcher__list">
+                {% for source in video_sources %}
+                <button type="button"
+                        class="video-switcher__btn{% if source.is_primary %} is-active{% endif %}"
+                        data-src="{{ source.url or '' }}"
+                        data-label="{{ source.label }}"
+                        {% if not source.url %}disabled{% endif %}>
+                    {{ source.label or ('视频段' ~ loop.index) }}
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        <div class="ppt-player__video-wrapper">
+            {% set default_video_src = '/ppt-videos/' ~ job.job_id ~ '/download/' ~ job.job_id ~ '.mp4' %}
+            <video id="ppt-video-player"
+                   class="ppt-video"
+                   controls
+                   preload="metadata"
+                   src="{{ video_stream_url or default_video_src }}">
+                您的浏览器不支持视频播放。
+            </video>
+        </div>
+        <div class="ppt-player__info">
+            <h2>{{ job.title or job.job_id }}</h2>
+            <div class="ppt-player__meta">
+                {% if job.video_duration_seconds %}
+                <span>时长: {{ '%d:%02d' | format(job.video_duration_seconds // 60, job.video_duration_seconds % 60) }}</span>
+                {% endif %}
+                {% if job.slide_count %}
+                <span>截图: {{ job.slide_count }} 张</span>
+                {% endif %}
+                {% if job.completed_at %}
+                <span>处理时间: {{ job.completed_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- 截图时间轴区域 -->
+    <section class="ppt-player__timeline-section">
+        <div class="ppt-player__timeline-header">
+            <h3>PPT截图时间轴</h3>
+            <p class="timeline-hint">双击或按回车键可跳转到对应视频时间点</p>
+        </div>
+        <div class="ppt-timeline" id="ppt-timeline">
+            {% if job.slides %}
+            {% for slide in job.slides %}
+            <div class="ppt-timeline__item" data-timestamp="{{ slide.timestamp_seconds }}" tabindex="0">
+                <div class="ppt-timeline__thumbnail">
+                    <img src="/ppt-videos/{{ job.job_id }}/slides/images/{{ slide.filename }}" alt="Slide {{ slide.index }}" loading="lazy">
+                </div>
+                <div class="ppt-timeline__info">
+                    <span class="ppt-timeline__index">#{{ slide.index }}</span>
+                    <span class="ppt-timeline__time">{{ slide.timestamp_text }}</span>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="empty-state">暂无截图信息</p>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+{% endblock %}
+
+{% block page_scripts %}
+<script src="{{ url_for('static', path='js/ppt_video_player.js') }}"></script>
+{% endblock %}

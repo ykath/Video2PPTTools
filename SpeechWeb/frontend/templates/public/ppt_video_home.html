@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}
+{% if search_term %}
+搜索结果 · PPT视频浏览
+{% else %}
+PPT视频浏览
+{% endif %}
+{% endblock %}
+{% block body_class %}public-body{% endblock %}
+{% block header %}
+<header class="public-header">
+    <div class="public-header__inner">
+        <div class="public-header__brand">
+            <span class="brand-mark">SpeechWeb</span>
+            <div>
+                <h1>PPT视频浏览</h1>
+                <p>已处理视频 · 共收录{{ total_count }} 个视频</p>
+            </div>
+        </div>
+        <div class="public-header__actions">
+            <a class="ghost-link" href="{{ url_for('ppt_video_home') }}">主页</a>
+            <a class="ghost-link" href="{{ url_for('manage_video_to_ppt') }}">管理后台</a>
+        </div>
+    </div>
+</header>
+{% endblock %}
+{% block main_class %}public-main{% endblock %}
+{% block content %}
+
+{% macro platform_badge(url) -%}
+    {% if url and "bilibili" in url %}
+        <span class="platform-badge bilibili">B站</span>
+    {% elif url and ("youtube" in url or "youtu.be" in url) %}
+        <span class="platform-badge youtube">YouTube</span>
+    {% elif url and ("ixigua" in url or "xigua" in url) %}
+        <span class="platform-badge ixigua">西瓜</span>
+    {% elif url and ("youku" in url or "iqiyi" in url or "qq.com" in url) %}
+        <span class="platform-badge generic">平台</span>
+    {% else %}
+        <span class="platform-badge generic">视频</span>
+    {% endif %}
+{%- endmacro %}
+
+<section class="search-panel">
+    <form class="search-form" method="get" action="{{ url_for('ppt_video_home') }}">
+        <div class="search-form__input">
+            <span class="search-icon" aria-hidden="true">&#128269;</span>
+            <input type="search" name="q" value="{{ search_term }}" placeholder="输入关键词检索视频标题或链接" aria-label="搜索视频内容">
+        </div>
+        <button type="submit" class="btn search-btn">搜索</button>
+        {% if search_term %}
+        <a class="clear-link" href="{{ url_for('ppt_video_home') }}">清除</a>
+        {% endif %}
+    </form>
+</section>
+
+<section class="video-section">
+    <div class="video-section__header">
+        <div>
+            <h3>视频列表</h3>
+            {% if search_term %}
+            <p>搜索“{{ search_term }}”共找到 {{ total_count }} 个视频。</p>
+            {% else %}
+            <p>共{{ total_count }}个已处理的培训视频，支持本地播放和PPT截图浏览。</p>
+            {% endif %}
+        </div>
+        {% if total_count > 0 %}
+        <span class="video-count">第{{ result_range[0] }} - {{ result_range[1] }} 个 · 共{{ total_count }} 个</span>
+        {% else %}
+        <span class="video-count">暂无记录</span>
+        {% endif %}
+    </div>
+
+    {% if videos %}
+    <div class="video-grid">
+        {% for video in videos %}
+        <article class="video-card video-card--ppt">
+            <div class="video-card__preview">
+                {% if video.slides and video.slides|length > 0 %}
+                <img src="/ppt-videos/{{ video.job_id }}/slides/images/{{ video.slides[0].filename }}" alt="{{ video.title or video.job_id }}" loading="lazy">
+                {% else %}
+                <div class="video-card__preview--placeholder">暂无封面</div>
+                {% endif %}
+                <a class="video-card__overlay" href="{{ url_for('ppt_video_player', job_id=video.job_id) }}">
+                    <div class="video-card__overlay-top">
+                        {{ platform_badge(video.url) }}
+                        {% if video.video_duration_seconds %}
+                        {% set minutes = video.video_duration_seconds // 60 %}
+                        {% set seconds = video.video_duration_seconds % 60 %}
+                        <span class="duration-chip duration-chip--light">{{ '%d:%02d' | format(minutes, seconds) }}</span>
+                        {% endif %}
+                    </div>
+                    <h4 class="video-card__overlay-title">{{ video.title or video.job_id }}</h4>
+                </a>
+            </div>
+            <p class="video-card__meta">
+                {% if video.slide_count %}
+                    {{ video.slide_count }} 张截图
+                {% else %}
+                    暂无截图
+                {% endif %}
+                {% if video.completed_at %}
+                    · {{ video.completed_at.strftime('%Y-%m-%d') }}
+                {% endif %}
+            </p>
+            <div class="video-card__footer">
+                <a class="text-link" href="{{ url_for('ppt_video_player', job_id=video.job_id) }}">本地播放</a>
+                {% if video.url %}
+                <a class="text-link" href="{{ video.url }}" target="_blank" rel="noopener noreferrer">原始播放</a>
+                {% else %}
+                <span class="text-link muted" aria-disabled="true">暂无外链</span>
+                {% endif %}
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        {% if search_term %}
+        <p>没有匹配“{{ search_term }}”的视频内容。试试调整关键词或者清除检索。</p>
+        {% else %}
+        <p>尚无已处理的视频。欢迎进入管理后台提交处理任务。</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if total_pages > 1 %}
+    <nav class="pagination" aria-label="分页导航">
+        {% if has_prev %}
+        <a class="pagination__link prev" href="{{ url_for('ppt_video_home') }}?{% if search_term %}q={{ search_term }}&{% endif %}page={{ prev_page }}">上一页</a>
+        {% else %}
+        <span class="pagination__link disabled">上一页</span>
+        {% endif %}
+
+        {% for number in page_numbers %}
+            {% if number == page %}
+            <span class="pagination__link current" aria-current="page">{{ number }}</span>
+            {% else %}
+            <a class="pagination__link" href="{{ url_for('ppt_video_home') }}?{% if search_term %}q={{ search_term }}&{% endif %}page={{ number }}">{{ number }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if has_next %}
+        <a class="pagination__link next" href="{{ url_for('ppt_video_home') }}?{% if search_term %}q={{ search_term }}&{% endif %}page={{ next_page }}">下一页</a>
+        {% else %}
+        <span class="pagination__link disabled">下一页</span>
+        {% endif %}
+    </nav>
+    {% endif %}
+</section>
+
+<footer class="public-footer">
+    <p>本项目旨在汇聚培训视频并自动生成PPT截图，仅供学习与交流使用。</p>
+</footer>
+{% endblock %}

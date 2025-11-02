@@ -1,0 +1,8 @@
+data/video_to_ppt_jobs/
+data/speech_videos.db
+logs/
+convert_db_paths.py
+convert_json_paths.py
+verify_new_task_paths.py
+TEST_PATH_FIX.md
+PATH_FIX_SUMMARY.md

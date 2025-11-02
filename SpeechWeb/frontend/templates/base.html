@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SpeechWeb Admin{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/main.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    {% block header %}
+    <header class="site-header">
+        <h1>SpeechWeb · Speech Collection Manager</h1>
+    </header>
+    {% endblock %}
+    <main class="{% block main_class %}{% endblock %}">
+        {% block content %}{% endblock %}
+    </main>
+    {% block extra_js %}{% endblock %}
+    {% block page_scripts %}{% endblock %}
+</body>
+</html>
+
