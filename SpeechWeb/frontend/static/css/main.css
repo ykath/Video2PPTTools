@@ -1,7 +1,7 @@
 ﻿:root {
     color-scheme: light dark;
     font-family: "Segoe UI", Arial, sans-serif;
-    --header-height: 140px;
+    --header-height: 70px;
 }
 
 body {
@@ -302,7 +302,7 @@ form textarea {
 .public-header {
     background: linear-gradient(135deg, #233b80, #4f6dcc);
     color: #fff;
-    padding: 2.8rem 3vw 2.3rem;
+    padding: 1.4rem 3vw 1.2rem;
 }
 
 .public-header__inner {
@@ -312,24 +312,24 @@ form textarea {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: 1.2rem;
 }
 
 .public-header__brand {
     display: flex;
     align-items: flex-start;
-    gap: 1rem;
+    gap: 0.8rem;
 }
 
 .public-header__brand h1 {
     margin: 0;
-    font-size: 2.12rem;
+    font-size: 1.3rem;
     font-weight: 700;
 }
 
 .public-header__brand p {
-    margin: 0.45rem 0 0;
-    font-size: 1rem;
+    margin: 0.25rem 0 0;
+    font-size: 0.85rem;
     opacity: 0.9;
 }
 
@@ -338,9 +338,9 @@ form textarea {
     align-items: center;
     justify-content: center;
     background: rgba(255, 255, 255, 0.18);
-    border-radius: 12px;
-    padding: 0.5rem 0.85rem;
-    font-size: 0.9rem;
+    border-radius: 8px;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.8rem;
     letter-spacing: 0.05em;
 }
 
@@ -847,7 +847,7 @@ form textarea {
 
 @media (max-width: 768px) {
     .public-header {
-        padding: 1.8rem 1.2rem 1.5rem;
+        padding: 1rem 1.2rem 0.9rem;
     }
 
     .public-main {
@@ -1333,6 +1333,95 @@ form textarea {
     min-height: 0;
 }
 
+.public-header__actions .ppt-layout-switcher {
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-right: 1rem;
+    padding: 0;
+    background: transparent;
+}
+
+.ppt-layout-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ppt-layout-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: #fff;
+}
+
+.ppt-layout-btn.is-active {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.6);
+    color: #fff;
+}
+
+.ppt-layout-btn svg {
+    flex-shrink: 0;
+    display: block;
+}
+
+.ppt-layout-btn span {
+    display: none;
+}
+
+/* 布局模式：左右布局（默认） */
+.ppt-player-container[data-layout="split"] {
+    grid-template-columns: 64% 36%;
+}
+
+.ppt-player-container[data-layout="split"] .ppt-player__video-section {
+    display: flex;
+}
+
+.ppt-player-container[data-layout="split"] .ppt-player__timeline-section {
+    display: flex;
+}
+
+/* 布局模式：最大化视频 */
+.ppt-player-container[data-layout="video-max"] {
+    grid-template-columns: 1fr;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.ppt-player-container[data-layout="video-max"] .ppt-player__video-section {
+    display: flex;
+    grid-column: 1 / -1;
+}
+
+.ppt-player-container[data-layout="video-max"] .ppt-player__timeline-section {
+    display: none;
+}
+
+/* 布局模式：最大化截图 */
+.ppt-player-container[data-layout="timeline-max"] {
+    grid-template-columns: 1fr;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.ppt-player-container[data-layout="timeline-max"] .ppt-player__video-section {
+    display: none;
+}
+
+.ppt-player-container[data-layout="timeline-max"] .ppt-player__timeline-section {
+    display: flex;
+    grid-column: 1 / -1;
+    max-height: calc(100vh - var(--header-height) - 6rem);
+}
+
 .ppt-player__video-section,
 .ppt-player__timeline-section {
     background: #fff;
@@ -1441,7 +1530,7 @@ form textarea {
 }
 
 .ppt-player__timeline-section {
-    padding: 1.2rem 1.4rem 1.4rem;
+    padding: 0.75rem 1rem 1rem;
     overflow: hidden;
     position: sticky;
     top: 1.2rem;
@@ -1449,20 +1538,23 @@ form textarea {
 }
 
 .ppt-player__timeline-header {
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.5rem;
     flex-shrink: 0;
 }
 
 .ppt-player__timeline-header h3 {
-    margin: 0 0 0.4rem 0;
-    font-size: 1.08rem;
+    margin: 0;
+    font-size: 0.95rem;
     color: #1f1f1f;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .timeline-hint {
     color: #666;
-    font-size: 0.85rem;
-    margin: 0;
+    font-size: 0.82rem;
+    font-weight: normal;
 }
 
 .ppt-timeline {

@@ -12,6 +12,29 @@
             </div>
         </div>
         <div class="public-header__actions">
+            <!-- 布局切换按钮 -->
+            <div class="ppt-layout-switcher">
+                <button type="button" class="ppt-layout-btn is-active" data-layout="split" title="左右布局">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="8" height="18" rx="1"/>
+                        <rect x="13" y="3" width="8" height="18" rx="1"/>
+                    </svg>
+                </button>
+                <button type="button" class="ppt-layout-btn" data-layout="video-max" title="最大化视频">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="2" width="20" height="20" rx="2"/>
+                        <polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/>
+                    </svg>
+                </button>
+                <button type="button" class="ppt-layout-btn" data-layout="timeline-max" title="最大化截图">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                </button>
+            </div>
             <a class="ghost-link" href="{{ url_for('ppt_video_home') }}">返回列表</a>
             {% if job.url %}
             <a class="ghost-link" href="{{ job.url }}" target="_blank" rel="noopener noreferrer">原始网站</a>
@@ -71,8 +94,7 @@
     <!-- 截图时间轴区域 -->
     <section class="ppt-player__timeline-section">
         <div class="ppt-player__timeline-header">
-            <h3>PPT截图时间轴</h3>
-            <p class="timeline-hint">双击或按回车键可跳转到对应视频时间点</p>
+            <h3>PPT截图时间轴 <span class="timeline-hint">· 双击或按回车键可跳转到对应视频时间点</span></h3>
         </div>
         <div class="ppt-timeline" id="ppt-timeline">
             {% if job.slides %}

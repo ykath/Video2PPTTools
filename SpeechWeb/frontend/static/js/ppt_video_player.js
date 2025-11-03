@@ -20,7 +20,10 @@
     const switcherButtons = Array.from(document.querySelectorAll('.video-switcher__btn'));
     const videoSection = document.querySelector('.ppt-player__video-section');
     const timelineSection = document.querySelector('.ppt-player__timeline-section');
+    const container = document.querySelector('.ppt-player-container');
+    const layoutButtons = Array.from(document.querySelectorAll('.ppt-layout-btn'));
     let activeSwitcherBtn = document.querySelector('.video-switcher__btn.is-active');
+    let activeLayoutBtn = document.querySelector('.ppt-layout-btn.is-active');
 
     const syncSectionHeights = () => {
         if (!videoSection || !timelineSection) {
@@ -151,7 +154,56 @@
         observer.observe(videoSection);
     }
 
+    // 布局切换功能
+    layoutButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const layout = button.getAttribute('data-layout');
+            if (!layout || button === activeLayoutBtn) {
+                return;
+            }
+
+            container.setAttribute('data-layout', layout);
+            
+            if (activeLayoutBtn) {
+                activeLayoutBtn.classList.remove('is-active');
+            }
+            button.classList.add('is-active');
+            activeLayoutBtn = button;
+
+            // 切换到最大化截图时暂停视频
+            if (layout === 'timeline-max') {
+                try {
+                    videoPlayer.pause();
+                } catch (err) {
+                    console.warn('[ppt_video_player] 暂停视频失败', err);
+                }
+            }
+
+            // 切换布局后重新同步高度
+            setTimeout(applyHeightSync, 50);
+        });
+    });
+
+    // 默认始终使用左右布局（不恢复上次的布局偏好）
+    if (container) {
+        container.setAttribute('data-layout', 'split');
+        const splitBtn = layoutButtons.find(btn => btn.getAttribute('data-layout') === 'split');
+        if (splitBtn) {
+            layoutButtons.forEach(btn => btn.classList.remove('is-active'));
+            splitBtn.classList.add('is-active');
+            activeLayoutBtn = splitBtn;
+        }
+    }
+
     applyHeightSync();
+    
+    // 页面加载后自动播放视频
+    videoPlayer.addEventListener('loadedmetadata', () => {
+        videoPlayer.play().catch((err) => {
+            console.warn('[ppt_video_player] 自动播放被浏览器阻止', err);
+        });
+    }, { once: true });
+
     console.log('[ppt_video_player] 初始化完成');
 })();
 
