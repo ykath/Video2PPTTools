@@ -40,7 +40,11 @@ BBDOWN_EXECUTABLE=tools/BBDown.exe
 YTDLP_EXECUTABLE=tools/yt-dlp.exe
 ```
 
-### 3. 启动服务
+### 3. FFMpeg 工具安装
+确认本机安装并环境配置了ffmpeg工具，BBDown在下载视频过程中需要使用该工具进行视频、音频合并处理。
+https://www.gyan.dev/ffmpeg/builds/#release-builds
+
+### 4. 启动服务
 
 双击运行 `start_server.bat` 或在命令行执行：
 
