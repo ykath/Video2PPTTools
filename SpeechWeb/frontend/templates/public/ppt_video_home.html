@@ -75,6 +75,9 @@ PPT视频浏览
     <div class="video-grid">
         {% for video in videos %}
         <article class="video-card video-card--ppt">
+            <h4 class="video-card__title">
+                <a href="{{ url_for('ppt_video_player', job_id=video.job_id) }}">{{ video.title or video.job_id }}</a>
+            </h4>
             <div class="video-card__preview">
                 {% if video.slides and video.slides|length > 0 %}
                 <img src="/ppt-videos/{{ video.job_id }}/slides/images/{{ video.slides[0].filename }}" alt="{{ video.title or video.job_id }}" loading="lazy">
@@ -82,7 +85,7 @@ PPT视频浏览
                 <div class="video-card__preview--placeholder">暂无封面</div>
                 {% endif %}
                 <a class="video-card__overlay" href="{{ url_for('ppt_video_player', job_id=video.job_id) }}">
-                    <div class="video-card__overlay-top">
+                    <div class="video-card__overlay-badges">
                         {{ platform_badge(video.url) }}
                         {% if video.video_duration_seconds %}
                         {% set minutes = video.video_duration_seconds // 60 %}
@@ -90,7 +93,6 @@ PPT视频浏览
                         <span class="duration-chip duration-chip--light">{{ '%d:%02d' | format(minutes, seconds) }}</span>
                         {% endif %}
                     </div>
-                    <h4 class="video-card__overlay-title">{{ video.title or video.job_id }}</h4>
                 </a>
             </div>
             <p class="video-card__meta">
@@ -110,6 +112,7 @@ PPT视频浏览
                 {% else %}
                 <span class="text-link muted" aria-disabled="true">暂无外链</span>
                 {% endif %}
+                <a class="text-link" href="{{ url_for('download_ppt', job_id=video.job_id) }}" download>下载PPT</a>
             </div>
         </article>
         {% endfor %}

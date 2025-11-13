@@ -1,6 +1,14 @@
 (function () {
     const WAITING_MESSAGE = "Loading job queue...";
     const REFRESH_INTERVAL = 20000;
+    
+    // 分页和筛选状态
+    let allJobs = [];
+    let filteredJobs = [];
+    let currentPage = 1;
+    let pageSize = 20;
+    let searchKeyword = "";
+    let statusFilter = "";
 
     const escapeHtml = (value) => {
         if (value === null || value === undefined) {
@@ -198,9 +206,110 @@
             `.trim();
         };
 
+        // 筛选任务
+        const filterJobs = () => {
+            filteredJobs = allJobs.filter((job) => {
+                // 状态筛选
+                if (statusFilter && job.status !== statusFilter) {
+                    return false;
+                }
+                
+                // 关键词搜索
+                if (searchKeyword) {
+                    const keyword = searchKeyword.toLowerCase();
+                    const jobId = (job.job_id || "").toLowerCase();
+                    const title = (job.title || "").toLowerCase();
+                    const subtitle = (job.subtitle || "").toLowerCase();
+                    
+                    if (!jobId.includes(keyword) && !title.includes(keyword) && !subtitle.includes(keyword)) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+            
+            currentPage = 1;
+            updateFilterStats();
+            renderCurrentPage();
+        };
+        
+        // 更新筛选统计信息
+        const updateFilterStats = () => {
+            const statsEl = document.getElementById("filter-stats");
+            if (!statsEl) return;
+            
+            const total = allJobs.length;
+            const filtered = filteredJobs.length;
+            
+            if (searchKeyword || statusFilter) {
+                statsEl.textContent = `显示 ${filtered} / ${total} 条任务`;
+            } else {
+                statsEl.textContent = `显示全部 ${total} 条任务`;
+            }
+        };
+        
+        // 渲染当前页
+        const renderCurrentPage = () => {
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = startIndex + pageSize;
+            const pageJobs = filteredJobs.slice(startIndex, endIndex);
+            
+            renderJobs(pageJobs);
+            renderPagination();
+        };
+        
+        // 渲染分页控件
+        const renderPagination = () => {
+            const paginationBar = document.getElementById("pagination-bar");
+            const paginationInfo = document.getElementById("pagination-info-text");
+            const pageNumbers = document.getElementById("page-numbers");
+            const pageFirst = document.getElementById("page-first");
+            const pagePrev = document.getElementById("page-prev");
+            const pageNext = document.getElementById("page-next");
+            const pageLast = document.getElementById("page-last");
+            
+            if (!paginationBar) return;
+            
+            const totalPages = Math.ceil(filteredJobs.length / pageSize);
+            
+            if (totalPages <= 1) {
+                paginationBar.style.display = "none";
+                return;
+            }
+            
+            paginationBar.style.display = "flex";
+            
+            const startIndex = (currentPage - 1) * pageSize + 1;
+            const endIndex = Math.min(currentPage * pageSize, filteredJobs.length);
+            paginationInfo.textContent = `第 ${startIndex}-${endIndex} 条，共 ${filteredJobs.length} 条`;
+            
+            // 生成页码按钮
+            const maxPageButtons = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
+            let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+            
+            if (endPage - startPage < maxPageButtons - 1) {
+                startPage = Math.max(1, endPage - maxPageButtons + 1);
+            }
+            
+            let pageButtonsHtml = "";
+            for (let i = startPage; i <= endPage; i++) {
+                const activeClass = i === currentPage ? "active" : "";
+                pageButtonsHtml += `<button type="button" class="btn small page-num ${activeClass}" data-page="${i}">${i}</button>`;
+            }
+            pageNumbers.innerHTML = pageButtonsHtml;
+            
+            // 更新按钮状态
+            pageFirst.disabled = currentPage === 1;
+            pagePrev.disabled = currentPage === 1;
+            pageNext.disabled = currentPage === totalPages;
+            pageLast.disabled = currentPage === totalPages;
+        };
+
         const renderJobs = (jobs) => {
             if (!jobs || jobs.length === 0) {
-                jobsContainer.innerHTML = "<p>No jobs yet. Submit a video to start processing.</p>";
+                jobsContainer.innerHTML = "<p>暂无符合条件的任务</p>";
                 return;
             }
 
@@ -262,7 +371,6 @@
                     </thead>
                     <tbody>${rows}</tbody>
                 </table>
-                <p class="muted">Total ${jobs.length} record(s).</p>
             `.trim();
         };
 
@@ -273,7 +381,10 @@
                     throw new Error(`HTTP ${response.status}`);
                 }
                 const data = await response.json();
-                renderJobs(data.items || []);
+                allJobs = data.items || [];
+                filteredJobs = [...allJobs];
+                updateFilterStats();
+                renderCurrentPage();
             } catch (error) {
                 console.error("[video_to_ppt] Failed to load jobs", error);
                 jobsContainer.innerHTML = `<p class="text-error">Failed to load jobs: ${escapeHtml(
@@ -482,9 +593,81 @@
             }
         });
 
+        // 筛选和分页事件监听
+        const searchInput = document.getElementById("search-input");
+        const statusFilterSelect = document.getElementById("status-filter");
+        const clearFiltersBtn = document.getElementById("clear-filters");
+        const pageSizeSelect = document.getElementById("page-size-select");
+        const paginationBar = document.getElementById("pagination-bar");
+        
+        // 搜索输入防抖
+        let searchTimeout;
+        searchInput.addEventListener("input", () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchKeyword = searchInput.value.trim();
+                filterJobs();
+            }, 300);
+        });
+        
+        // 状态筛选
+        statusFilterSelect.addEventListener("change", () => {
+            statusFilter = statusFilterSelect.value;
+            filterJobs();
+        });
+        
+        // 清除筛选
+        clearFiltersBtn.addEventListener("click", () => {
+            searchInput.value = "";
+            statusFilterSelect.value = "";
+            searchKeyword = "";
+            statusFilter = "";
+            filterJobs();
+        });
+        
+        // 每页显示数量
+        pageSizeSelect.addEventListener("change", () => {
+            pageSize = parseInt(pageSizeSelect.value, 10);
+            currentPage = 1;
+            renderCurrentPage();
+        });
+        
+        // 分页按钮事件委托
+        paginationBar.addEventListener("click", (event) => {
+            const target = event.target;
+            if (!target.classList.contains("btn")) {
+                return;
+            }
+            
+            const totalPages = Math.ceil(filteredJobs.length / pageSize);
+            
+            if (target.id === "page-first") {
+                currentPage = 1;
+                renderCurrentPage();
+            } else if (target.id === "page-prev") {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderCurrentPage();
+                }
+            } else if (target.id === "page-next") {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderCurrentPage();
+                }
+            } else if (target.id === "page-last") {
+                currentPage = totalPages;
+                renderCurrentPage();
+            } else if (target.classList.contains("page-num")) {
+                const page = parseInt(target.dataset.page, 10);
+                if (!isNaN(page) && page >= 1 && page <= totalPages) {
+                    currentPage = page;
+                    renderCurrentPage();
+                }
+            }
+        });
+
         console.info("[video_to_ppt] Adding event listeners");
         processQueueBtn.addEventListener("click", processQueue);
-        // submitButton.addEventListener("click", submitJob);  // 不需要，form已经有submit事件
         form.addEventListener("submit", submitJob);
         jobsContainer.addEventListener("click", handleTableClick);
         console.info("[video_to_ppt] Event listeners added successfully");

@@ -14,27 +14,29 @@
 <p class="page-intro">提交哔哩哔哩培训视频链接，自动下载截取PPT截图并生成PPT文件。支持调节截图频率、PPT显示模式等参数，所有任务会在后台排队执行。</p>
 
 <div class="grid two-columns">
-    <section class="card">
+    <section class="card compact-form">
         <h2>添加新任务</h2>
         <form id="ppt-job-form" class="stacked">
             <div class="form-row">
                 <label for="field-url">视频链接 <span class="required">*</span></label>
                 <input id="field-url" name="url" type="url" placeholder="https://www.bilibili.com/video/BV..." required>
-                <small>支持B站 BV、番剧和课程地址。</small>
+                <small>支持B站 BV、番剧和课程地址</small>
             </div>
-            <div class="form-row">
-                <label for="field-title">PPT标题</label>
-                <input id="field-title" name="title" type="text" placeholder="PPT 标题（可选，默认取视频标题）">
+            <div class="form-row grouped two-cols">
+                <div>
+                    <label for="field-title">PPT标题</label>
+                    <input id="field-title" name="title" type="text" placeholder="可选，默认取视频标题">
+                </div>
+                <div>
+                    <label for="field-subtitle">副标题</label>
+                    <input id="field-subtitle" name="subtitle" type="text" placeholder="可选">
+                </div>
             </div>
-            <div class="form-row">
-                <label for="field-subtitle">副标题</label>
-                <input id="field-subtitle" name="subtitle" type="text" placeholder="副标题（可选）">
-            </div>
-            <div class="form-row grouped">
+            <div class="form-row grouped three-cols">
                 <div>
                     <label for="field-similarity">相似度阈值</label>
                     <input id="field-similarity" name="similarity_threshold" type="number" step="0.01" min="0" max="1" value="0.95">
-                    <small>越高越少截图，推荐 0.93 - 0.98。</small>
+                    <small>0.93-0.98</small>
                 </div>
                 <div>
                     <label for="field-interval">最小间隔(秒)</label>
@@ -45,37 +47,39 @@
                     <input id="field-skip" name="skip_first_seconds" type="number" step="1" min="0" value="0">
                 </div>
             </div>
-            <div class="form-row grouped">
+            <div class="form-row grouped three-cols">
                 <div>
-                    <label for="field-fill">图片铺满模式</label>
+                    <label for="field-fill">图片铺满</label>
                     <select id="field-fill" name="fill_mode">
-                        <option value="true" selected>铺满幻灯片（可能裁切边缘）</option>
-                        <option value="false">保持完整显示（保留边距）</option>
+                        <option value="true" selected>铺满</option>
+                        <option value="false">保持完整</option>
                     </select>
                 </div>
                 <div>
-                    <label for="field-format">图片格式</label>
+                    <label for="field-format">格式</label>
                     <select id="field-format" name="image_format">
                         <option value="jpg" selected>JPG</option>
                         <option value="png">PNG</option>
                     </select>
                 </div>
                 <div>
-                    <label for="field-quality">图片质量</label>
+                    <label for="field-quality">质量</label>
                     <input id="field-quality" name="image_quality" type="number" min="10" max="100" value="95">
                 </div>
             </div>
-            <div class="form-row">
-                <label for="field-job-id">自定义任务ID</label>
-                <input id="field-job-id" name="job_id" type="text" maxlength="64" placeholder="留空自动生成">
+            <div class="form-row grouped two-cols">
+                <div>
+                    <label for="field-job-id">自定义任务ID</label>
+                    <input id="field-job-id" name="job_id" type="text" maxlength="64" placeholder="留空自动生成">
+                </div>
+                <div>
+                    <label for="field-file-pattern">文件名模式</label>
+                    <input id="field-file-pattern" name="file_pattern" type="text" placeholder="如：&lt;videoTitle&gt;">
+                </div>
             </div>
             <div class="form-row">
-                <label for="field-file-pattern">自定义下载文件名 (BBDown --file-pattern)</label>
-                <input id="field-file-pattern" name="file_pattern" type="text" placeholder="如：&lt;videoTitle&gt;">
-            </div>
-            <div class="form-row">
-                <label for="field-extra-args">额外的 BBDown 参数</label>
-                <textarea id="field-extra-args" name="extra_download_args" rows="2" placeholder="每行一个参数，例如 --dfn-priority 1080P"></textarea>
+                <label for="field-extra-args">额外 BBDown 参数</label>
+                <textarea id="field-extra-args" name="extra_download_args" rows="1" placeholder="如：--dfn-priority 1080P"></textarea>
             </div>
             <div class="form-footer">
                 <button type="submit" id="ppt-job-submit" class="btn">提交任务</button>
@@ -85,9 +89,9 @@
         </form>
     </section>
 
-    <section class="card" id="job-detail-card" aria-live="polite">
+    <section class="card compact-detail" id="job-detail-card" aria-live="polite">
         <h2>任务详情</h2>
-        <p id="detail-placeholder">选择任务查看状态与结果。</p>
+        <p id="detail-placeholder">选择任务查看状态与结果</p>
         <div id="job-detail" class="hidden"></div>
     </section>
 </div>
@@ -104,8 +108,53 @@
             </label>
         </div>
     </header>
+    
+    <!-- 筛选和搜索栏 -->
+    <div class="jobs-filter-bar">
+        <div class="filter-group">
+            <input type="text" id="search-input" placeholder="搜索 Job ID / 标题..." class="search-input">
+            <select id="status-filter" class="filter-select">
+                <option value="">全部状态</option>
+                <option value="pending">Pending</option>
+                <option value="running">Running</option>
+                <option value="completed">Completed</option>
+                <option value="failed">Failed</option>
+            </select>
+            <button type="button" class="btn small secondary" id="clear-filters">清除筛选</button>
+        </div>
+        <div class="filter-info">
+            <span id="filter-stats">显示全部任务</span>
+        </div>
+    </div>
+    
     <div id="jobs-table-container">
         <p>正在加载任务列表...</p>
+    </div>
+    
+    <!-- 分页控件 -->
+    <div class="pagination-bar" id="pagination-bar" style="display: none;">
+        <div class="pagination-info">
+            <span id="pagination-info-text"></span>
+        </div>
+        <div class="pagination-controls">
+            <button type="button" class="btn small" id="page-first" disabled>首页</button>
+            <button type="button" class="btn small" id="page-prev" disabled>上一页</button>
+            <span class="page-numbers" id="page-numbers"></span>
+            <button type="button" class="btn small" id="page-next">下一页</button>
+            <button type="button" class="btn small" id="page-last">末页</button>
+        </div>
+        <div class="pagination-size">
+            <label>
+                每页显示
+                <select id="page-size-select">
+                    <option value="10">10</option>
+                    <option value="20" selected>20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+                条
+            </label>
+        </div>
     </div>
 </section>
 {% endblock %}

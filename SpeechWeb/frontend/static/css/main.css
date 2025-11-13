@@ -231,6 +231,84 @@ form textarea {
     background: #fff;
 }
 
+/* 紧凑表单样式 */
+.compact-form h2 {
+    font-size: 1.1rem;
+    margin: 0 0 0.8rem 0;
+}
+
+.compact-form .form-row {
+    margin-bottom: 0.6rem;
+}
+
+.compact-form .form-row label {
+    font-size: 0.82rem;
+    margin-bottom: 0.25rem;
+}
+
+.compact-form .form-row input,
+.compact-form .form-row select,
+.compact-form .form-row textarea {
+    padding: 0.45rem 0.6rem;
+    font-size: 0.9rem;
+}
+
+.compact-form .form-row small {
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 0.15rem;
+}
+
+.compact-form .form-row textarea {
+    min-height: 32px;
+    resize: vertical;
+}
+
+.compact-form .form-row.grouped {
+    flex-direction: row;
+    gap: 0.6rem;
+}
+
+.compact-form .form-row.grouped > div {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.compact-form .form-row.grouped.two-cols > div {
+    flex: 1;
+}
+
+.compact-form .form-row.grouped.three-cols > div {
+    flex: 1;
+}
+
+.compact-form .form-footer {
+    margin-top: 0.6rem;
+}
+
+/* 紧凑详情卡片 */
+.compact-detail h2 {
+    font-size: 1.1rem;
+    margin: 0 0 0.8rem 0;
+}
+
+.compact-detail #detail-placeholder {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0;
+}
+
+.compact-detail .job-detail-content {
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .compact-form .form-row.grouped {
+        flex-direction: column;
+    }
+}
+
 .hidden {
     display: none !important;
 }
@@ -1196,8 +1274,22 @@ form textarea {
 
 .video-card--ppt {
     aspect-ratio: auto;
-    padding: 1.2rem;
-    gap: 0.9rem;
+    padding: 1rem;
+    gap: 0.75rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.video-card--ppt .video-card__title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.4;
+    height: 2.8em;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .video-card--ppt .video-card__title a {
@@ -1207,18 +1299,20 @@ form textarea {
 
 .video-card--ppt .video-card__title a:hover {
     text-decoration: underline;
+    color: #223a70;
 }
 
 .video-card--ppt .video-card__meta {
     color: #52618c;
     font-size: 0.85rem;
+    margin: 0;
 }
 
 .video-card--ppt .video-card__preview {
     position: relative;
     width: 100%;
     padding-top: 56.25%;
-    border-radius: 12px;
+    border-radius: 10px;
     background: #f0f3fa;
     overflow: hidden;
     box-shadow: inset 0 0 0 1px rgba(25, 39, 94, 0.06);
@@ -1255,48 +1349,36 @@ form textarea {
     top: 0;
     left: 0;
     right: 0;
+    bottom: 0;
     z-index: 2;
     display: flex;
-    flex-direction: column;
-    gap: 0.45rem;
-    padding: 0.85rem 0.95rem 1.6rem;
-    background: linear-gradient(180deg, rgba(18, 32, 75, 0.82) 0%, rgba(18, 32, 75, 0) 80%);
-    color: #fff;
+    align-items: flex-start;
+    padding: 0.75rem;
+    background: transparent;
     text-decoration: none;
-    border-radius: 12px 12px 0 0;
+    border-radius: 10px;
+    transition: background 0.2s ease;
 }
 
-.video-card--ppt .video-card__overlay-top {
+.video-card--ppt .video-card__overlay:hover {
+    background: rgba(18, 32, 75, 0.05);
+}
+
+.video-card--ppt .video-card__overlay-badges {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     flex-wrap: wrap;
 }
 
-.video-card--ppt .video-card__overlay-title {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
-    line-height: 1.35;
-    color: #fff;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
 .duration-chip--light {
-    background: rgba(255, 255, 255, 0.88);
+    background: rgba(255, 255, 255, 0.92);
     color: #1f2a5c;
-}
-
-.video-card--ppt .video-card__overlay:hover .video-card__overlay-title,
-.video-card--ppt .video-card__overlay:focus-visible .video-card__overlay-title {
-    text-decoration: underline;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .video-card--ppt .video-card__overlay:focus-visible {
-    outline: 2px solid rgba(255, 255, 255, 0.9);
+    outline: 2px solid #223a70;
     outline-offset: 2px;
 }
 
@@ -1689,4 +1771,142 @@ form textarea {
 
 .page-header .page-title {
     margin: 0;
+}
+
+/* 任务队列筛选栏 */
+.jobs-filter-bar {
+    padding: 1rem 1.5rem;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 300px;
+}
+
+.search-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #223a70;
+    box-shadow: 0 0 0 3px rgba(34, 58, 112, 0.1);
+}
+
+.filter-select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: #fff;
+    cursor: pointer;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #223a70;
+}
+
+.filter-info {
+    color: #666;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+/* 分页栏 */
+.pagination-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.pagination-info {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.page-numbers {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.page-num {
+    min-width: 36px;
+    padding: 0.4rem 0.6rem;
+}
+
+.page-num.active {
+    background: #223a70;
+    color: #fff;
+    border-color: #223a70;
+}
+
+.pagination-size {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.pagination-size select {
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .jobs-filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group {
+        flex-direction: column;
+        align-items: stretch;
+        min-width: 100%;
+    }
+    
+    .search-input {
+        min-width: 100%;
+    }
+    
+    .pagination-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .pagination-controls {
+        justify-content: center;
+    }
+    
+    .pagination-size {
+        justify-content: center;
+    }
 }
